@@ -22,6 +22,7 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.myapplication.custom_filter_activity.StringAdapter;
 
@@ -31,7 +32,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -74,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
         JSONArray jsonArray = null;
         try {
             jsonArray = new JSONArray(httpReqBody);
+
             links.clear();
            for (int i=0; i<jsonArray.length();i++){
                JSONObject object = (JSONObject) jsonArray.get(i);
@@ -81,14 +85,14 @@ public class MainActivity extends AppCompatActivity {
                     String rating = object.get("rating").toString();
                     if (NSFW){
                         if (rating.equalsIgnoreCase("e")){
-                            links.add(object.get("file_url").toString());
+                            links.add(object.get("large_file_url").toString());
                         }
                     }  if (SFW){
                         if (rating.equalsIgnoreCase("q")){
-                            links.add(object.get("file_url").toString());
+                            links.add(object.get("large_file_url").toString());
                         }
                     } else if (!NSFW && !SFW){
-                        links.add(object.get("file_url").toString());
+                        links.add(object.get("large_file_url").toString());
                     }
 
 
@@ -233,17 +237,16 @@ public class MainActivity extends AppCompatActivity {
              @Override
              public void onClick(View v) {
                  try {
+                     links.clear();
                      count=0;
                      pageCount=1;
-                     inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
                      AutoCompleteTextView view = searchBar;
                      String text = view.getText().toString();
                      request(text,1);
-
                      imageView.setImageDrawable(null);
                      TextView page_text_view = findViewById(R.id.page_no_view);
                      pageOneItemCount=links.size();
-                     page_text_view.setText(pageCount+" : "+count+"/"+links.size());
+                     page_text_view.setText(count+"/"+links.size());
                    new DownloadImageTask(imageView).execute(links.get(0));
                      Log.d("tag",text);
 
@@ -316,42 +319,91 @@ public void requestTags(String url){
 }
 
     public void request(String tag1, int pageNo){
-        StringBuilder url = new StringBuilder("https://danbooru.donmai.us/posts.json?tags=");
-        if (tag1.contains(",")) {
-            String tags[] = tag1.split(",");
-            for (String tag : tags) {
-                url.append(tag);
-                url.append("+");
+        links.clear();
+        TextView log_textView = findViewById(R.id.log_text_view);
+        log_textView.setText("Parsing started");
+        inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        Toast.makeText(getApplicationContext(),"Query Started",Toast.LENGTH_SHORT).show();
+        count=0;
+        pageNo = 0;
+
+
+
+        while (true) {
+            links = removeDuplicates(links);
+            if (links.size()>100){
+                break;
             }
-        } else {
-            url.append(tag1);
-        }
-
-        url.append("&page=");
-        url.append(pageNo);
-        Log.d("tag",url.toString());
-
-        Request request = new Request.Builder().url(url.toString()).build();
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-//                Toast.makeText(getApplicationContext(),"Connection Failed",Toast.LENGTH_LONG).show();
-                Log.d("expt",e.toString());
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) {
-                assert response.body() != null;
-                try {
-                   httpReqBody = response.body().string();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
+            pageNo++;
+            StringBuilder url = new StringBuilder("https://danbooru.donmai.us/posts.json?tags=");
+            if (tag1.contains(",")) {
+                String tags[] = tag1.split(",");
+                for (String tag : tags) {
+                    url.append(tag);
+                    url.append("+");
                 }
+            } else {
+                url.append(tag1);
             }
-        });
-        refreshLinks();
 
+            url.append("&page=");
+            url.append(pageNo);
+            Log.d("tag", url.toString());
+
+            Request request = new Request.Builder().url(url.toString()).build();
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Log.d("expt", e.toString());
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) {
+                    assert response.body() != null;
+                    try {
+                        httpReqBody = response.body().string();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            boolean NSFW = nsfw.isChecked();
+            boolean SFW = sfw.isChecked();
+            JSONArray jsonArray = null;
+            try {
+                jsonArray = new JSONArray(httpReqBody);
+                if (jsonArray.length()>0) {
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject object = (JSONObject) jsonArray.get(i);
+                        try {
+                            String rating = object.get("rating").toString();
+                            if (NSFW) {
+                                if (rating.equalsIgnoreCase("e")) {
+                                    links.add(object.get("large_file_url").toString());
+                                }
+                            }
+                            if (SFW) {
+                                if (rating.equalsIgnoreCase("q")) {
+                                    links.add(object.get("large_file_url").toString());
+                                }
+                            } else if (!NSFW && !SFW) {
+                                links.add(object.get("large_file_url").toString());
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(),"Query Finished",Toast.LENGTH_SHORT).show();
+                    log_textView.setText("Parsing finished from page: " +pageNo);
+                    break;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
@@ -392,6 +444,27 @@ public void requestTags(String url){
         searchBar.setAdapter(tagSugAdapter);
         searchBar.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
         searchBar.showDropDown();
+    }
+
+    public static <T> ArrayList<T> removeDuplicates(ArrayList<T> list)
+    {
+
+        // Create a new ArrayList
+        ArrayList<T> newList = new ArrayList<T>();
+
+        // Traverse through the first list
+        for (T element : list) {
+
+            // If this element is not present in newList
+            // then add it
+            if (!newList.contains(element)) {
+
+                newList.add(element);
+            }
+        }
+
+        // return the new list
+        return newList;
     }
 
 
