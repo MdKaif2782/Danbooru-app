@@ -19,11 +19,14 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.example.myapplication.custom_filter_activity.ImageListAdapter;
 import com.example.myapplication.custom_filter_activity.StringAdapter;
 
 import org.json.JSONArray;
@@ -47,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     public int pageOneItemCount = 0;
     public MultiAutoCompleteTextView searchBar;
     public String inputText;
-    public ImageView imageView;
+    public GridView imageView;
     ArrayList<String> tagList = new ArrayList<>();
     private final OkHttpClient client = new OkHttpClient();
     String httpReqBody;
@@ -147,11 +150,13 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                 }
-                imageView.setImageDrawable(null);
+
                 TextView page_text_view = findViewById(R.id.page_no_view);
                 page_text_view.setText(pageCount+" : "+count+"/"+links.size());
                 if (links.size()>0) {
-                    new DownloadImageTask(imageView).execute(links.get(count));
+//                    Glide.with(getApplicationContext())
+//                            .load(links.get(count))
+//                            .into(imageView);
                 }
                 Log.d("tag",text);
             }
@@ -173,10 +178,13 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                imageView.setImageDrawable(null);
+
                 TextView page_text_view = findViewById(R.id.page_no_view);
                 page_text_view.setText(pageCount+" : "+count+"/"+links.size());
-                new DownloadImageTask(imageView).execute(links.get(count));
+
+//                Glide.with(getApplicationContext())
+//                        .load(links.get(count))
+//                        .into(imageView);
                 Log.d("tag",text);
             }
         });
@@ -243,11 +251,16 @@ public class MainActivity extends AppCompatActivity {
                      AutoCompleteTextView view = searchBar;
                      String text = view.getText().toString();
                      request(text,1);
-                     imageView.setImageDrawable(null);
+
                      TextView page_text_view = findViewById(R.id.page_no_view);
                      pageOneItemCount=links.size();
                      page_text_view.setText(count+"/"+links.size());
-                   new DownloadImageTask(imageView).execute(links.get(0));
+                     ImageListAdapter listAdapter = new ImageListAdapter(getApplicationContext(),links.toArray(new String[links.size()]));
+                     imageView.setAdapter(listAdapter);
+//                     Glide.with(getApplicationContext())
+//                                     .load(links.get(0))
+//                                             .into(imageView);
+
                      Log.d("tag",text);
 
                  }catch (Exception e){
@@ -404,46 +417,6 @@ public void requestTags(String url){
             }
 
         }
-    }
-
-    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-        ImageView bmImage;
-
-        public DownloadImageTask(ImageView bmImage) {
-            this.bmImage = bmImage;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String urldisplay = urls[0];
-            Bitmap mIcon11 = null;
-            try {
-                InputStream in = new java.net.URL(urldisplay).openStream();
-                mIcon11 = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error", e.getMessage());
-                e.printStackTrace();
-            }
-            return mIcon11;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            try {
-                bmImage.setImageBitmap(result);
-            }catch (RuntimeException e){
-                Log.e("error",e.toString());
-            }
-
-
-        }
-    }
-
-    public void createHandler(){
-        tagSugAdapter = new StringAdapter(getApplicationContext(),
-                android.R.layout.simple_dropdown_item_1line,
-                tagSuggestions.toArray(new String[tagSuggestions.size()]));
-        searchBar.setAdapter(tagSugAdapter);
-        searchBar.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
-        searchBar.showDropDown();
     }
 
     public static <T> ArrayList<T> removeDuplicates(ArrayList<T> list)
