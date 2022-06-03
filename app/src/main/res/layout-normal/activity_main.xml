@@ -63,7 +63,7 @@
 
     <LinearLayout
         android:layout_width="300dp"
-        android:layout_height="355dp"
+        android:layout_height="460dp"
         android:layout_gravity="center"
         android:layout_marginTop="25dp"
         android:background="@drawable/image_frame"
@@ -71,61 +71,22 @@
 
         >
 
-        <GridView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/TextView1"
             android:layout_width="295dp"
-            android:layout_height="350dp"
+            android:layout_height="450dp"
             android:layout_gravity="center"
             android:gravity="center_vertical"
             android:numColumns="1"
             android:textSize="20sp" />
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
 
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="20dp"
-        android:orientation="horizontal"
-        android:visibility="visible">
-
-        <Button
-            android:id="@+id/previous_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:text="Prev" />
-
-        <LinearLayout
-            android:layout_width="105dp"
-            android:layout_height="37dp"
-            android:layout_gravity="center"
-            android:background="@drawable/round_full_cool_nh_background">
-
-            <TextView
-                android:id="@+id/page_no_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:paddingLeft="5dp"
-                android:text="Page 1"
-                android:textColor="@color/cool_nh_white"
-                android:textSize="17sp" />
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/next_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:text="next" />
-    </LinearLayout>
 
     <LinearLayout
         android:layout_width="200dp"
         android:layout_height="40dp"
+        android:layout_marginTop="10dp"
         android:layout_gravity="center"
         >
         <CheckBox
@@ -179,6 +140,48 @@
 
         </LinearLayout>
 
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_gravity="center"
+        android:layout_marginTop="600dp"
+        android:layout_marginBottom="20dp"
+        android:orientation="horizontal"
+        android:visibility="visible">
+
+        <Button
+            android:id="@+id/previous_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:text="Prev" />
+
+        <LinearLayout
+            android:layout_width="105dp"
+            android:layout_height="37dp"
+            android:layout_gravity="center"
+            android:background="@drawable/round_full_cool_nh_background">
+
+            <TextView
+                android:id="@+id/page_no_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:paddingLeft="5dp"
+                android:text="Page 1"
+                android:textColor="@color/cool_nh_white"
+                android:textSize="17sp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/next_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="next" />
     </LinearLayout>
 
 

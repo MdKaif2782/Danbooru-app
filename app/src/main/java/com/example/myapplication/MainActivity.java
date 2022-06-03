@@ -4,6 +4,9 @@ package com.example.myapplication;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -26,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.myapplication.Adapters.RecyclerImageAdapter;
 import com.example.myapplication.custom_filter_activity.ImageListAdapter;
 import com.example.myapplication.custom_filter_activity.StringAdapter;
 
@@ -50,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     public int pageOneItemCount = 0;
     public MultiAutoCompleteTextView searchBar;
     public String inputText;
-    public GridView imageView;
+    public RecyclerView imageView;
     ArrayList<String> tagList = new ArrayList<>();
     private final OkHttpClient client = new OkHttpClient();
     String httpReqBody;
@@ -125,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         applicationContext = this.getApplicationContext();
+
 
 
         nsfw = findViewById(R.id.nsfw_checkbox);
@@ -255,8 +260,15 @@ public class MainActivity extends AppCompatActivity {
                      TextView page_text_view = findViewById(R.id.page_no_view);
                      pageOneItemCount=links.size();
                      page_text_view.setText(count+"/"+links.size());
-                     ImageListAdapter listAdapter = new ImageListAdapter(getApplicationContext(),links.toArray(new String[links.size()]));
-                     imageView.setAdapter(listAdapter);
+                     RecyclerImageAdapter adapter = new RecyclerImageAdapter(getApplicationContext(),links.toArray(new String[links.size()]));
+                     RecyclerView.LayoutManager manager = new GridLayoutManager(getApplicationContext(),1);
+                     imageView.setLayoutManager(manager);
+                     imageView.setAdapter(adapter);
+                     imageView.setHasFixedSize(true);
+
+//                     ImageListAdapter listAdapter = new ImageListAdapter(getApplicationContext(),links.toArray(new String[links.size()]));
+
+//                     imageView.setAdapter(listAdapter);
 //                     Glide.with(getApplicationContext())
 //                                     .load(links.get(0))
 //                                             .into(imageView);
@@ -344,7 +356,7 @@ public void requestTags(String url){
 
         while (true) {
             links = removeDuplicates(links);
-            if (links.size()>100){
+            if (links.size()>2000){
                 break;
             }
             pageNo++;
